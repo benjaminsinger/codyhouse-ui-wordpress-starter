@@ -1,42 +1,70 @@
-// If you're interested in automating more control, check out gulpjs.com for more dependencies
-// This is meant as a starting point. You can do a LOT more with gulpjs than this
+var gulp = require('gulp');
+var sass = require('gulp-sass');
+var sassGlob = require('gulp-sass-glob');
+var browserSync = require('browser-sync');
+var postcss = require('gulp-postcss');
+var autoprefixer = require('autoprefixer');
+var cssvariables = require('postcss-css-variables');
+var calc = require('postcss-calc');
+var concat = require('gulp-concat');
+var rename = require('gulp-rename');
+var uglify = require('gulp-uglify');
+var connect = require('gulp-connect-php');
+var themeName = 'wbc-training'; // use your WP theme folder name
 
-// Requiring dependencies here, make sure to add them via the terminal
-var gulp   = require('gulp'),
-    sass   = require('gulp-sass'),
-    concat = require('gulp-concat'),
-    minify = require('gulp-minify');
+// js file paths
+var utilJsPath = 'node_modules/codyhouse-framework/main/assets/js';
+var componentsJsPath = 'assets/js/components/*.js'; // component js files
+var scriptsJsPath = 'assets/js'; //folder for final scripts.js/scripts.min.js files
 
-let destinations = {
-    src: './assets'
-    dist: './dist'
+// css file paths
+var cssFolder = 'assets/css'; // folder for final style.css/style-fallback.css files
+var scssFilesPath = 'assets/css/**/*.scss'; // scss files to watch
+
+function reload(done) {
+  browserSync.reload({ notify: false });
+  done();
 }
 
-// Need to create a /css folder and a /sass folder inside the /css folder
-gulp.task('build-that-css', function() {
-  return gulp.src('./assets/sass/*.scss')
-    .pipe(sass().on('error', sass.logError))
-    .pipe(concat('main.css'))
-    .pipe(gulp.dest('css/'));
-});
-// Obviously enqueue this new css file "main.css" in your functions.php
-
-gulp.task('compress-that-js', function() {
-  gulp.src('./assets/js/*.js')
-    .pipe(minify({
-    	ext: {
-    		src: 'main.js', // create main.js for all your extra theme JS
-    		min: '.min.js'
-    	} 
+gulp.task('sass', function () {
+  return gulp.src(scssFilesPath)
+    .pipe(sassGlob())
+    .pipe(sass({ outputStyle: 'compressed' }).on('error', sass.logError))
+    .pipe(postcss([autoprefixer()]))
+    .pipe(gulp.dest(cssFolder))
+    .pipe(browserSync.reload({
+      stream: true,
+      notify: false
     }))
-    .pipe(gulp.dest('js/min/'))
-	// enqueue this minified file in your functions.php file 
+  // if you need to support IE11 and below:
+  // 1 - remove ; from the above line 👆
+  // 2 - uncomment 3 lines below 👇
+  .pipe(rename('style-fallback.css'))
+  .pipe(postcss([cssvariables(), calc()]))
+  .pipe(gulp.dest(cssFolder));
 });
 
-// Gulp is watching you and your coding with the command: gulp watch
-gulp.task('watch', function() {
-  gulp.watch('./css/sass/*.scss', ['build-that-css']);
-  gulp.watch('./js/*.js', ['compress-that-js']);
+gulp.task('scripts', function () {
+  return gulp.src([utilJsPath + '/util.js', componentsJsPath])
+    .pipe(concat('scripts.js'))
+    .pipe(gulp.dest(scriptsJsPath))
+    .pipe(rename('scripts.min.js'))
+    .pipe(uglify())
+    .pipe(gulp.dest(scriptsJsPath))
+    .pipe(browserSync.reload({
+      stream: true,
+      notify: false
+    }));
 });
 
-gulp.task('default', ['watch']);
+gulp.task('watch', gulp.series(['sass', 'scripts'], function () {
+  connect.server({}, function () {
+    browserSync({
+      proxy: 'localhost:8888/' + themeName,
+      notify: false
+    });
+  });
+  gulp.watch('**/*.php', gulp.series(reload));
+  gulp.watch('assets/css/**/*.scss', gulp.series(['sass']));
+  gulp.watch(componentsJsPath, gulp.series(['scripts']));
+}));

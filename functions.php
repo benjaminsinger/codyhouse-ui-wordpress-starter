@@ -12,7 +12,57 @@ if ( ! defined( '_S_VERSION' ) ) {
 	define( '_S_VERSION', '1.0.0' );
 }
 
-if ( ! function_exists( 'wbc_training_setup' ) ) :
+
+
+
+
+
+
+// CODYFRAME STUFF
+
+function codyframe_register_styles() {
+
+  $theme_version = wp_get_theme()->get( 'Version' );
+
+  wp_enqueue_style( 'codyframe', get_template_directory_uri() . '/assets/css/style.css', array(), $theme_version );
+}
+
+add_action( 'wp_enqueue_scripts', 'codyframe_register_styles' );
+
+function codyframe_register_scripts() {
+
+  $theme_version = wp_get_theme()->get( 'Version' );
+
+  wp_enqueue_script( 'codyframe', get_template_directory_uri() . '/assets/js/scripts.js', array(), $theme_version, true );
+}
+
+add_action( 'wp_enqueue_scripts', 'codyframe_register_scripts' );
+
+// no-js support
+function codyframe_js_support() {
+  ?>
+  <script>document.getElementsByTagName("html")[0].className += " js";</script>
+  <?php
+}
+
+add_action( 'wp_print_scripts', 'codyframe_js_support');
+
+
+/* IE 11 and downwards support */
+function codyframe_ie_support() {
+  ?>
+  <script>if(! ('CSS' in window) || !CSS.supports('color', 'var(--color-var)')) {var cfStyle = document.getElementById('codyframe-css');if(cfStyle) {var href = cfStyle.getAttribute('href');href = href.replace('style.css', 'style-fallback.css');cfStyle.setAttribute('href', href);}}</script>
+  <?php
+}
+add_action( 'wp_print_scripts', 'codyframe_ie_support' );
+
+
+
+
+
+
+
+// if ( ! function_exists( 'wbc_training_setup' ) ) :
 	/**
 	 * Sets up theme defaults and registers support for various WordPress features.
 	 *
@@ -101,8 +151,10 @@ if ( ! function_exists( 'wbc_training_setup' ) ) :
 			)
 		);
 	}
-endif;
-add_action( 'after_setup_theme', 'wbc_training_setup' );
+// endif;
+// add_action( 'after_setup_theme', 'wbc_training_setup' );
+
+
 
 /**
  * Set the content width in pixels, based on the theme's design and stylesheet.
@@ -111,45 +163,45 @@ add_action( 'after_setup_theme', 'wbc_training_setup' );
  *
  * @global int $content_width
  */
-function wbc_training_content_width() {
-	$GLOBALS['content_width'] = apply_filters( 'wbc_training_content_width', 640 );
-}
-add_action( 'after_setup_theme', 'wbc_training_content_width', 0 );
+// function wbc_training_content_width() {
+// 	$GLOBALS['content_width'] = apply_filters( 'wbc_training_content_width', 640 );
+// }
+// add_action( 'after_setup_theme', 'wbc_training_content_width', 0 );
 
 /**
  * Register widget area.
  *
  * @link https://developer.wordpress.org/themes/functionality/sidebars/#registering-a-sidebar
  */
-function wbc_training_widgets_init() {
-	register_sidebar(
-		array(
-			'name'          => esc_html__( 'Sidebar', 'wbc-training' ),
-			'id'            => 'sidebar-1',
-			'description'   => esc_html__( 'Add widgets here.', 'wbc-training' ),
-			'before_widget' => '<section id="%1$s" class="widget %2$s">',
-			'after_widget'  => '</section>',
-			'before_title'  => '<h2 class="widget-title">',
-			'after_title'   => '</h2>',
-		)
-	);
-}
-add_action( 'widgets_init', 'wbc_training_widgets_init' );
+// function wbc_training_widgets_init() {
+// 	register_sidebar(
+// 		array(
+// 			'name'          => esc_html__( 'Sidebar', 'wbc-training' ),
+// 			'id'            => 'sidebar-1',
+// 			'description'   => esc_html__( 'Add widgets here.', 'wbc-training' ),
+// 			'before_widget' => '<section id="%1$s" class="widget %2$s">',
+// 			'after_widget'  => '</section>',
+// 			'before_title'  => '<h2 class="widget-title">',
+// 			'after_title'   => '</h2>',
+// 		)
+// 	);
+// }
+// add_action( 'widgets_init', 'wbc_training_widgets_init' );
 
 /**
  * Enqueue scripts and styles.
  */
-function wbc_training_scripts() {
-	wp_enqueue_style( 'wbc-training-style', get_stylesheet_uri(), array(), _S_VERSION );
-	wp_style_add_data( 'wbc-training-style', 'rtl', 'replace' );
+// function wbc_training_scripts() {
+// 	wp_enqueue_style( 'wbc-training-style', get_stylesheet_uri(), array(), _S_VERSION );
+// 	wp_style_add_data( 'wbc-training-style', 'rtl', 'replace' );
 
-	wp_enqueue_script( 'wbc-training-navigation', get_template_directory_uri() . '/js/navigation.js', array(), _S_VERSION, true );
+// 	wp_enqueue_script( 'wbc-training-navigation', get_template_directory_uri() . '/js/navigation.js', array(), _S_VERSION, true );
 
-	if ( is_singular() && comments_open() && get_option( 'thread_comments' ) ) {
-		wp_enqueue_script( 'comment-reply' );
-	}
-}
-add_action( 'wp_enqueue_scripts', 'wbc_training_scripts' );
+// 	if ( is_singular() && comments_open() && get_option( 'thread_comments' ) ) {
+// 		wp_enqueue_script( 'comment-reply' );
+// 	}
+// }
+// add_action( 'wp_enqueue_scripts', 'wbc_training_scripts' );
 
 /**
  * Implement the Custom Header feature.
